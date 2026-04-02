@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "napari-annotation-plugin"
-version = "0.1.0"
+version = "0.1.1"
 description = "Napari plugin for fast review and correction of 2D object detection annotations on TIF images."
 readme = "README.md"
 license = { text = "MIT" }

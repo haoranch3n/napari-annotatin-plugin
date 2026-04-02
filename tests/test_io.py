@@ -25,6 +25,12 @@ def test_find_annotation_path(tmp_path: Path) -> None:
     assert find_annotation_path("missing", tmp_path) is None
 
 
+def test_find_annotation_path_predictions_fallback(tmp_path: Path) -> None:
+    """Same folder as image.tif + predictions.csv (test-data layout)."""
+    (tmp_path / "predictions.csv").write_text("center_x,center_y,width,height,class_id\n")
+    assert find_annotation_path("image", tmp_path) == tmp_path / "predictions.csv"
+
+
 def test_csv_loader_good_and_bad_rows(tmp_path: Path) -> None:
     p = tmp_path / "f.csv"
     p.write_text(
@@ -73,6 +79,19 @@ def test_ensure_2d_image() -> None:
     b = ensure_2d_image(a)
     assert b.ndim == 2
     assert b.shape == (10, 12)
+
+
+def test_ensure_2d_image_channels_last_hwc() -> None:
+    """(H, W, C) must not collapse to a single row (regression vs test-data TIFs)."""
+    a = np.zeros((182, 459, 2), dtype=np.uint16)
+    b = ensure_2d_image(a)
+    assert b.shape == (182, 459)
+
+
+def test_ensure_2d_image_channels_first_chw() -> None:
+    a = np.zeros((2, 100, 200), dtype=np.uint8)
+    b = ensure_2d_image(a)
+    assert b.shape == (100, 200)
 
 
 def test_list_image_paths(tmp_path: Path) -> None:

@@ -1,0 +1,11 @@
+folder,n_detections
+case01_five_boxes_mixed,5
+case02_five_boxes_all_top,5
+case03_five_boxes_mixed_2,5
+case04_four_boxes,4
+case05_three_boxes,3
+case06_two_boxes,2
+case07_one_box_AP2_Image7,1
+case08_one_box_nonKI,1
+case09_five_boxes_Eps15,5
+case10_four_boxes_CLC,4

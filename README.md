@@ -48,9 +48,13 @@ project/
 
 In the widget:
 
-1. **Open Dataset Folder** → choose `images/`.
-2. **Input annotations** → choose `predictions/` (CSV files matched by stem: `img_001.tif` ↔ `img_001.csv`).
+1. **Open Dataset Folder** → choose `images/` (or a single case folder; see below).
+2. **Input annotations** → choose `predictions/` (CSV files matched by stem: `img_001.tif` ↔ `img_001.csv`). If `{stem}.csv` is missing, the plugin also looks for `predictions.csv` or `labels.csv` in the same folder (one-file-per-directory layouts).
 3. **Output annotations** → choose `annotations_corrected/`.
+
+### Nested case folders (e.g. `test-data/`)
+
+The plugin lists TIFs **only in the folder you select** (not subfolders). For layouts like `test-data/case01/.../image.tif` + `predictions.csv`, open **that case folder** as the dataset folder and set **input** and **output** to the same folder (or input = that folder). The image stem is `image`, so corrected CSVs save as `image.csv` in the output folder unless you use a separate output directory.
 
 Original files under `predictions/` are never overwritten; saves go only to the output folder.
 

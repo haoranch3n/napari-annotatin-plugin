@@ -25,36 +25,81 @@ def list_image_paths(dataset_dir: Path) -> list[Path]:
     return sorted(paths, key=lambda x: x.name.lower())
 
 
+# If `{stem}.csv` is missing, try these names (one CSV per folder workflows).
+_FALLBACK_ANNOTATION_NAMES: tuple[str, ...] = (
+    "predictions.csv",
+    "labels.csv",
+)
+
+
 def find_annotation_path(
     stem: str,
     input_dir: Path,
     exts: Sequence[str] = (".csv",),
 ) -> Path | None:
-    """Return companion annotation file path if it exists, else None."""
+    """
+    Return companion annotation file path if it exists, else None.
+
+    First tries ``{stem}{ext}`` (e.g. ``image.csv`` for ``image.tif``). If not
+    found, tries common single-file names such as ``predictions.csv`` so
+    layouts like ``case_dir/image.tif`` + ``case_dir/predictions.csv`` work.
+    """
     if not input_dir.is_dir():
         return None
     for ext in exts:
         candidate = input_dir / f"{stem}{ext}"
         if candidate.is_file():
             return candidate
+    for name in _FALLBACK_ANNOTATION_NAMES:
+        candidate = input_dir / name
+        if candidate.is_file():
+            return candidate
     return None
+
+
+def _reduce_3d_to_2d(a: np.ndarray) -> np.ndarray:
+    """Pick one 2D plane from a 3D array (channels or Z-stack)."""
+    # Channels last: (rows, cols, C), C small
+    if (
+        a.shape[-1] in (2, 3, 4)
+        and a.shape[0] > a.shape[-1]
+        and a.shape[1] > a.shape[-1]
+    ):
+        return a[..., 0]
+    # Channels first: (C, rows, cols), C small
+    if (
+        a.shape[0] in (2, 3, 4)
+        and a.shape[1] > a.shape[0]
+        and a.shape[2] > a.shape[0]
+    ):
+        return a[0]
+    # Otherwise (Z, H, W) or ambiguous
+    return a[0]
 
 
 def ensure_2d_image(arr: np.ndarray) -> np.ndarray:
     """
     Reduce multi-dimensional TIF data to a single 2D plane (float32).
 
-    Assumptions documented in README: last two dimensions are height and width.
-    Extra dimensions (Z, T, C, etc.) are collapsed by taking the first slice
-    along leading axes until the array is 2D.
+    Handles common layouts:
+
+    - **(H, W, C)** with C in ``{2, 3, 4}`` (channels last): use the first channel.
+    - **(C, H, W)** with C in ``{2, 3, 4}`` (channels first): use the first channel.
+    - **(Z, H, W)** or other 3D stacks: use the first slice along axis 0.
+    - **4D+**: take the leading slice until 3D, then apply the same rules.
+
+    This avoids interpreting ``(H, W, 2)`` as ``(Z, H, W)`` with ``Z=H``,
+    which would incorrectly slice a single image row.
     """
     a = np.asarray(arr)
     if a.ndim == 0:
         raise ValueError("Empty array")
     a = np.squeeze(a)
     while a.ndim > 2:
-        a = a[0]
-        a = np.squeeze(a)
+        if a.ndim == 3:
+            a = _reduce_3d_to_2d(a)
+        else:
+            a = np.squeeze(a[0])
     if a.ndim != 2:
         raise ValueError(f"Could not reduce to 2D, shape was {np.asarray(arr).shape}")
     return a.astype(np.float32, copy=False)
