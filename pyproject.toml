@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "napari-annotation-plugin"
-version = "0.1.1"
+version = "0.1.2"
 description = "Napari plugin for fast review and correction of 2D object detection annotations on TIF images."
 readme = "README.md"
 license = { text = "MIT" }
@@ -22,16 +22,21 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
   "Typing :: Typed",
 ]
+# Runtime deps for the plugin code only. Napari + npe2 are expected from the
+# environment (e.g. `module load napari`) unless you install the `bundled` extra.
 dependencies = [
   "numpy>=1.21",
   "pandas>=1.3",
-  "napari[all]>=0.4.18",
-  "npe2>=0.7.0",
   "qtpy>=2.0",
   "tifffile>=2022.2.2",
 ]
 
 [project.optional-dependencies]
+# Use when you do NOT have napari/npe2 from modules or conda; installs napari via pip.
+bundled = [
+  "napari[all]>=0.4.18",
+  "npe2>=0.7.0",
+]
 dev = [
   "pytest>=7.0",
   "pytest-cov>=4.0",

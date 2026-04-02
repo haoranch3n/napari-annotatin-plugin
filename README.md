@@ -11,17 +11,53 @@ Napari plugin for **fast review and correction** of 2D object detection results 
 - Save corrections to an **output** folder (e.g. `annotations_corrected/`) as CSV.
 - **Autosave** when moving to next/previous image, on widget close, and on application quit (when output folder is set and there are unsaved changes).
 
-## Install (virtual environment)
+## Install
+
+You need **napari** and **npe2** available to the same Python you use to install this package. Two common setups:
+
+### A. System / module-provided napari (no pip install of napari)
+
+Use this when your site provides napari via **Environment Modules**, **Lmod**, etc. (e.g. `module load napari`).
+
+1. Load napari (and anything your site documents for the GUI stack).
+2. Use the **same** `python` / `pip` from that stack so the plugin registers with that interpreter:
 
 ```bash
-cd /path/to/annotation-napari
+module load napari          # example; name may differ on your cluster
+python -c "import napari, npe2"   # should succeed
+
+cd /path/to/napari-annotation-plugin
+pip install -U pip
+pip install -e .            # installs only: numpy, pandas, qtpy, tifffile
+# optional: pip install -e ".[dev]"   # pytest, etc.
+```
+
+This project **does not** list `napari` or `npe2` as required pip dependencies, so `pip install -e .` will not try to download napari from PyPI.
+
+If you use a **venv**, create it from that module’s Python and consider **`--system-site-packages`** so the venv can see napari from the module, for example:
+
+```bash
+module load napari
+python -m venv .venv --system-site-packages
+source .venv/bin/activate
+pip install -e .
+```
+
+Adjust to match your admin’s recommendations.
+
+### B. Standalone virtual environment (pip installs napari)
+
+When you are not using a preinstalled napari, install napari and npe2 together with the plugin:
+
+```bash
+cd /path/to/napari-annotation-plugin
 python3 -m venv .venv
 source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -U pip
-pip install -e ".[dev]"
+pip install -e ".[bundled,dev]"   # napari[all] + npe2 + dev tools
 ```
 
-If `pip install` fails while building **PyQt6** (common on minimal Linux systems), install napari from **conda-forge** and then install this package with `pip install -e . --no-deps` after installing `numpy`, `pandas`, `qtpy`, `tifffile`, `npe2` in that environment.
+If **PyQt** fails to build on pip, prefer **conda-forge** for napari, then `pip install -e .` (without `[bundled]`) in that environment.
 
 ## Run in napari
 
@@ -113,8 +149,17 @@ Shortcuts apply when the napari viewer handles the key (focus on the canvas). If
 
 ## Develop and test
 
+With **module-loaded napari** (only plugin deps + pytest):
+
 ```bash
 pip install -e ".[dev]"
+pytest
+```
+
+With a **full pip stack** (includes napari for local GUI testing):
+
+```bash
+pip install -e ".[bundled,dev]"
 pytest
 ```
 
