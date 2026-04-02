@@ -101,9 +101,9 @@ def _edge_colors_from_faces(face: np.ndarray) -> np.ndarray:
 class AnnotationReviewWidget(QWidget):
     """Main UI for reviewing and correcting bounding boxes."""
 
-    def __init__(self, viewer: Viewer) -> None:
+    def __init__(self, napari_viewer: Viewer) -> None:
         super().__init__()
-        self._viewer = viewer
+        self._viewer = napari_viewer
         self._dataset_dir: Path | None = None
         self._input_ann_dir: Path | None = None
         self._output_ann_dir: Path | None = None
@@ -624,6 +624,3 @@ def _active_layer(viewer: Viewer):
     return getattr(layers, "active", None)
 
 
-def create_annotation_widget(viewer: Viewer) -> AnnotationReviewWidget:
-    """npe2 widget factory: dock widget for annotation review."""
-    return AnnotationReviewWidget(viewer)

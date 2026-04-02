@@ -1,11 +1,11 @@
 name: napari-annotation-plugin
 display_name: Annotation Review
-schema_version: 0.1.0
+schema_version: 0.2.1
 contributions:
   commands:
     - id: napari-annotation-plugin.make_widget
       title: Open Annotation Review
-      python_name: napari_annotation_plugin.widget:create_annotation_widget
+      python_name: napari_annotation_plugin.widget:AnnotationReviewWidget
   widgets:
     - command: napari-annotation-plugin.make_widget
       display_name: Annotation Review
